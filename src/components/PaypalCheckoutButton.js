@@ -1,5 +1,6 @@
-import React , {useEffect} from 'react';
-import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
+import React  from 'react';
+import { PayPalScriptProvider, 
+        PayPalButtons } from "@paypal/react-paypal-js";
 
 const PaypalOptions = {
     "client-id": "AWvTwUEn-RV3xGFwsuBHc6DJ1KDP5oiTtwBsOv6Yj4Z0mfx0OEM99S0nopTv0sFUEMZUGRuyOxsAt6vd",
@@ -13,23 +14,18 @@ const PaypalOptions = {
   };
 
 const PaypalCheckoutButton = ({product}) => {
-    let amountValue;
-
+ 
     const handleApprove = (orderId) => {
         //call backend function to fullfill order
         // if response is success 
         // setPaidFor(true);
     }
 
-    // useEffect(() => {
-    //     amountValue = product.amountValue
-    //     console.log("rerender", product);
-    // }, [product]);
-
     return (
         <PayPalScriptProvider options={PaypalOptions}>
         <PayPalButtons 
-          style={PaypalStyle} 
+          style={PaypalStyle}
+          forceReRender={[product.amountValue, product.description]}
           createOrder = {
             (data, actions) => {
                 console.log("amount", product.amountValue);

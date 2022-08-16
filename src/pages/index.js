@@ -5,6 +5,7 @@ import Layout from '../components/Layout';
 import InputGroup from 'react-bootstrap/InputGroup';
 import PaypalCheckoutButton from '../components/PaypalCheckoutButton';
 
+
 const IndexPage = () => {
   const [product, setProduct] = React.useState({
     description: 'Buy Coin',
@@ -19,6 +20,7 @@ const IndexPage = () => {
       }
     })
   }
+
 
   return (
     <Layout pageTitle="Purchase Coin">
