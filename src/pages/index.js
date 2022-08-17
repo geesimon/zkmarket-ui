@@ -26,7 +26,7 @@ const IndexPage = () => {
         const transaction = await generateTransaction();
 
         const product = {
-            description: transaction.commitmentHash,
+            description: 'zkMarket Coin {' + transaction.commitmentHash + '}',
             amount: amount
         }
         navigate("/pay/", { state: {product} })

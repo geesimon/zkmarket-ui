@@ -3,11 +3,6 @@ import Layout from '../components/Layout';
 import PaypalCheckoutButton from '../components/PaypalCheckoutButton';
 
 const PayPage = ({location}) => {
-    // const [product, setProduct] = React.useState({
-    //     description: "abcd",
-    //     amount: 123,
-    // });
-
     const handlePaypalApprove = async (_orderDetails) => {
         console.log("Got paid:", _orderDetails);
 

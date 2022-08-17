@@ -14,12 +14,11 @@ const PaypalOptions = {
   };
 
 const PaypalCheckoutButton = ({product, handleApprove}) => {
-
     return (
         <PayPalScriptProvider options={PaypalOptions}>
         <PayPalButtons 
             style={PaypalStyle}
-            forceReRender={[product.amount, product.description]}
+            // forceReRender={[product.amount, product.description]}
             createOrder = {
                 async (data, actions) => {
                     return actions.order.create({
