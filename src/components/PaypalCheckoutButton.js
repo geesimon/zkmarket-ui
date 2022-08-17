@@ -34,7 +34,6 @@ const PaypalCheckoutButton = ({product, handleApprove}) => {
                 }
           }
             onApprove = { async (data, actions) => {
-                console.log("onApprove Data:", data);
                 const orderDetails = await actions.order.capture();
                 handleApprove(orderDetails);
             }}

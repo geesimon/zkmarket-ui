@@ -1,8 +1,5 @@
 import AllConfig from './config.json';
-import * as utils from './utils.js';
-import { getCookie } from './cookie';
-
-const bigInt = require('big-integer');
+import {rbigint, bigInt2BytesLE, pedersenHasher, getCookie} from './utils.js';
 
 const CommitmentCircuitWASMFile = "../commitment.wasm";
 const CommitmentCircuitKey = "../circuit_commitment_final.zkey";
@@ -16,6 +13,27 @@ const TREE_LEVELS = 20;
 const env = getCookie("env") ? getCookie("env") : 'main';
 const config = AllConfig[env];
 // console.log(config);
+
+export const generateTransaction = async (
+                                            _amount = rbigint(31),
+                                            _secret = rbigint(31), 
+                                            _nullifier = rbigint(31)
+                                        ) => {
+    const preimage = Buffer.concat([
+                                    Buffer.from(bigInt2BytesLE(_nullifier, 31)),
+                                    Buffer.from(bigInt2BytesLE(_secret, 31)),
+                                    Buffer.from(bigInt2BytesLE(_amount, 31))
+                                    ]);
+
+    let commitmentHash = await pedersenHasher(preimage);
+
+    return {
+        commitmentHash: commitmentHash.toString(),
+        amount: _amount.toString(),
+        nullifier: _nullifier.toString(),
+        secret: _secret.toString()
+    };
+};
 
 export const packProofData = (proof) => {
   return [

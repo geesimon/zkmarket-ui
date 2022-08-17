@@ -1,7 +1,7 @@
 import * as React from 'react'
 import Layout from '../components/Layout';
 import { navigate } from "gatsby"
-import {generateTransaction} from '/static/utils'
+import {generateTransaction} from '/static/contract'
 import {Card, Button, Form, Row, Col} from 'react-bootstrap';
 
 const IndexPage = () => {

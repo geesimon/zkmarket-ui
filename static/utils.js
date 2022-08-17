@@ -34,24 +34,33 @@ export const bigInt2BytesLE = (_a, len) => {
     return b;
 };
 
+export const setCookie = (name, value, days) => {
+    if( typeof document === "undefined") return;
 
-export const generateTransaction = async (
-                                            _amount = rbigint(31),
-                                            _secret = rbigint(31), 
-                                            _nullifier = rbigint(31)
-                                        ) => {
-    const preimage = Buffer.concat([
-                                    Buffer.from(bigInt2BytesLE(_nullifier, 31)),
-                                    Buffer.from(bigInt2BytesLE(_secret, 31)),
-                                    Buffer.from(bigInt2BytesLE(_amount, 31))
-                                    ]);
+    var expires = "";
+    if (days) {
+        var date = new Date();
+        date.setTime(date.getTime() + (days*24*60*60*1000));
+        expires = "; expires=" + date.toUTCString();
+    }
+    document.cookie = name + "=" + (value || "")  + expires + "; path=/";
+  }
+  
+export const getCookie = (name) => {
+    if( typeof document === "undefined") return;
 
-    let commitmentHash = await pedersenHasher(preimage);
+    var nameEQ = name + "=";
+    var ca = document.cookie.split(';');
+    for(var i=0;i < ca.length;i++) {
+        var c = ca[i];
+        while (c.charAt(0) === ' ') c = c.substring(1,c.length);
+        if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length,c.length);
+    }
+    return null;
+  }
+  
+export const eraseCookie = (name) => {
+    if( typeof document === "undefined") return;
 
-    return {
-        commitmentHash: commitmentHash.toString(),
-        amount: _amount.toString(),
-        nullifier: _nullifier.toString(),
-        secret: _secret.toString()
-    };
-};
+    document.cookie = name +'=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+}

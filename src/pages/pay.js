@@ -28,8 +28,6 @@ const PayPage = ({location}) => {
     }
     
     const handlePaypalApprove = async (_orderDetails) => {
-        console.log("Got paid:", _orderDetails);
-
         const paypalAmount = _orderDetails.purchase_units[0].amount.value;
         const paypalDescription = _orderDetails.purchase_units[0].description;
         
