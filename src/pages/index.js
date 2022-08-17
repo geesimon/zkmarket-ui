@@ -23,13 +23,9 @@ const IndexPage = () => {
     }
 
     const handlePayClick = async () => {
-        const transaction = await generateTransaction();
+        const transaction = await generateTransaction(amount);
 
-        const product = {
-            description: 'zkMarket Coin {' + transaction.commitmentHash + '}',
-            amount: amount
-        }
-        navigate("/pay/", { state: {product} })
+        navigate("/pay/", { state: transaction })
     }
  
     return (
@@ -41,6 +37,14 @@ const IndexPage = () => {
                 <Form >
                     <Form.Group as={Row} className="mb-3">
                     <Col sm={10}>
+                        <Form.Check
+                        type="radio"
+                        label="$1"
+                        name="amount_group"
+                        id = "amount_0"
+                        value = "1"
+                        onChange = {handleChangeAmount}
+                        />
                         <Form.Check
                         type="radio"
                         label="$100"

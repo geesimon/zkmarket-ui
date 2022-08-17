@@ -1,31 +1,7 @@
 {
     "main":{
-        "CHAIN_NAME": "Harmony Mainnet",
-        "CHAIN_URL": "https://api.harmony.one",
-        "CHAIN_CURRENCY_SYMBOL": "ONE",
-        "CHAIN_EXPLORER_URL": "https://explorer.harmony.one/",
-        "CHAIN_IDS": ["1666600000", "1666600001", "1666600002", "1666600003"],
-        "ETH_HONGBAO_CONTRACTS":{
-            "1" : {
-                "ADDRESS" : "0x85f179b1763AE933d6B95A8B473889e9d290A784",
-                "FEE": "0.1"
-            },
-            "10" : {
-                "ADDRESS" : "0x674f5440Aea3679A5567dFE3c621131Da427605B",
-                "FEE": "1"
-            },
-            "100" : {
-                "ADDRESS" : "0x79670b9EBCcb8c562F0e42c46EE8086726F9B93D",
-                "FEE": "1"
-            },
-            "1000" : {
-                "ADDRESS" : "0x56A67a9933EC75d47E29c7D1D6C8d155A54ccf43",
-                "FEE": "1"
-            }
-        },
-        "CAMPAIGN_MANAGER_CONTRACT_ADDRESS": "0x46ae45448ddEd730d1AcA074f806109245a08502",
-        "RELAYER_ADDRESS": "0xB685a03E2fDbb4F66aF57513Ea64c7821E15DA37",
-        "RELAYER_URL":"https://relayer.redbao.me"
+        "COMMITMENT_RELAYER_URL":"http://localhost:3000/api/commitment_relay",
+        "WITHDRAWAL_RELAYER_URL":"http://localhost:3000/api/withdrawal_relay"
     },
     "test":{
         "CHAIN_NAME": "Harmony Testnet",

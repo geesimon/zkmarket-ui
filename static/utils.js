@@ -36,9 +36,9 @@ export const bigInt2BytesLE = (_a, len) => {
 
 
 export const generateTransaction = async (
+                                            _amount = rbigint(31),
                                             _secret = rbigint(31), 
-                                            _nullifier = rbigint(31), 
-                                            _amount = rbigint(31)
+                                            _nullifier = rbigint(31)
                                         ) => {
     const preimage = Buffer.concat([
                                     Buffer.from(bigInt2BytesLE(_nullifier, 31)),
@@ -54,12 +54,4 @@ export const generateTransaction = async (
         nullifier: _nullifier.toString(),
         secret: _secret.toString()
     };
-};
-
-export const packProofData = (proof) => {
-    return [
-      proof.pi_a[0], proof.pi_a[1],
-      proof.pi_b[0][1], proof.pi_b[0][0], proof.pi_b[1][1], proof.pi_b[1][0],
-      proof.pi_c[0], proof.pi_c[1],
-    ]
 };
