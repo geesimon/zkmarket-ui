@@ -1,7 +1,7 @@
 module.exports = {
   siteMetadata: {
-    title: `zkMarket`,
-    siteUrl: `https://www.yourdomain.tld`,
+    title: `zkMarket Finance`,
+    siteUrl: `https://zkmarket.finance`,
   },
   plugins: [],
 }

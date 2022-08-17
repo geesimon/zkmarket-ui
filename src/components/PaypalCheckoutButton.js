@@ -13,43 +13,35 @@ const PaypalOptions = {
     shape: "pill"
   };
 
-const PaypalCheckoutButton = ({product}) => {
- 
-    const handleApprove = (orderId) => {
-        //call backend function to fullfill order
-        // if response is success 
-        // setPaidFor(true);
-    }
+const PaypalCheckoutButton = ({product, handleApprove}) => {
 
     return (
         <PayPalScriptProvider options={PaypalOptions}>
         <PayPalButtons 
-          style={PaypalStyle}
-          forceReRender={[product.amountValue, product.description]}
-          createOrder = {
-            (data, actions) => {
-                console.log("amount", product.amountValue);
-
-              return actions.order.create({
-                purchase_units:[
-                  {
-                    description: product.description,
-                    amount: {
-                      value: product.amountValue
-                    }
-                  }
-                ]
-              })
+            style={PaypalStyle}
+            forceReRender={[product.amount, product.description]}
+            createOrder = {
+                async (data, actions) => {
+                    return actions.order.create({
+                        purchase_units:[
+                            {
+                                description: product.description,
+                                amount: {
+                                    value: product.amount
+                                }
+                            }
+                        ]
+                    })
+                }
+          }
+            onApprove = { async (data, actions) => {
+                console.log("onApprove Data:", data);
+                const orderDetails = await actions.order.capture();
+                handleApprove(orderDetails);
+            }}
+            onError={(err) => {
+                console.log(err);
             }
-          }
-          onApprove={async (data, actions) => {
-            const order = await actions.order.capture();
-            console.log("order", order);
-            handleApprove(data.orderID);
-          }}
-          onError={(err) => {
-            console.log(err);
-          }
           }
         />
         </PayPalScriptProvider>
