@@ -1,11 +1,12 @@
 import * as React from 'react'
 import Layout from '../components/Layout';
 import { navigate } from "gatsby"
-import {Card, Button, Form, Row, Col} from 'react-bootstrap';
+import {Card, Button, Form, Row, Col, Spinner} from 'react-bootstrap';
 import {generateCommitment} from '/static/contract';
 
 const IndexPage = () => {
-    const [amount, setMount] = React.useState(1); 
+    const [amount, setAmount] = React.useState(0);
+    const [loading, setLoading] = React.useState(false);
 
     React.useEffect(() => {
         // Add snarkjs script
@@ -19,10 +20,12 @@ const IndexPage = () => {
     }, []);
 
     const handleChangeAmount = (event) =>{
-        setMount(Number(event.target.value));
+        setAmount(Number(event.target.value));
     }
     
     const handlePayClick = async () => {
+        setLoading(true);
+
         const commitment = await generateCommitment(amount);
 
         navigate("/pay/", { state: commitment });
@@ -90,7 +93,19 @@ const IndexPage = () => {
                         />
                     </Col>
                     </Form.Group>
-                    <Button variant="primary" size="lg" onClick={handlePayClick}>Pay</Button>
+                    {/* <Button variant="primary" size="lg" onClick={handlePayClick}>Pay</Button> */}
+                    <Button variant="primary" size="lg" onClick={handlePayClick} disabled={(amount == 0) || loading}>
+                        {loading &&
+                        <Spinner
+                            as="span"
+                            animation="border"
+                            size="sm"
+                            role="status"
+                            aria-hidden="true"
+                            />
+                        }
+                        Pay
+                    </Button>
                     </Form>          
                 </Card.Body>
             </Card>

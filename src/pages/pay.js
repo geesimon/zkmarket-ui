@@ -1,4 +1,5 @@
-import * as React from 'react'
+import React from 'react'
+import {ProgressBar, ButtonToolbar} from 'react-bootstrap';
 import Layout from '../components/Layout';
 import PaypalCheckoutButton from '../components/PaypalCheckoutButton';
 import {
@@ -10,7 +11,13 @@ import {
 
 const RECIPIENT_ADDRESS='0x360e7cc953ea07d97bb21647285155a83ad35e09';
 
-const PayPage = ({location}) => {    
+const PayPage = ({location}) => {
+    const [progress, setProgress] = React.useState({
+        variant: 'info',
+        status: '',
+        percentage: 0
+    });
+
     React.useEffect(() => {
         // Add snarkjs script
         const script = document.createElement('script');
@@ -43,37 +50,42 @@ const PayPage = ({location}) => {
             return;
         }
 
+        setProgress({status: 'Wait Paypal Transaction Got Posted to Chain', variant: 'info', percentage: 1});
         let ret = await postPaypalCommitment(
             commitment.amount, 
             'zkMarket Coin {' + commitment.commitmentHash + '}'
         );
         if (!ret) {
-            console.log('Failed to post paypal commitment!');
+            setProgress({status: 'Failed to post paypal commitment!', variant: 'danger', percentage: 100});
             return;
         }
 
+        setProgress({status: 'Post Transaction Proof', variant: 'info', percentage: 20});
         const treeInfo = await postCommitmentProof(commitment);
         if (treeInfo.root === undefined) {
-            console.log('Failed to post commitment proof!');
+            setProgress({status: 'Failed to post commitment proof!', variant: 'danger', percentage: 100});
             return;
         }
 
+        setProgress({status: 'Post Withdrawal Proof', variant: 'info', percentage: 50});
         const withdrawalInput = await generateWithdrawInput(commitment, treeInfo, RECIPIENT_ADDRESS);
         console.log(withdrawalInput);
         ret = await postWithdrawalProof(withdrawalInput);
             if (!ret) {
-            console.log('Failed to post withdrawal proof!');
-            return;
-        } 
-        console.log('Done!');
+                setProgress({status: 'Failed to post withdrawal proof!', variant: 'danger', percentage: 100});
+                return;
+            } 
+        setProgress({status: 'Done', variant: 'info', percentage: 100});
     }
 
     return (
         <Layout pageTitle="Pay with Paypal">
-        <PaypalCheckoutButton 
-            product = {product}
-            handleApprove = {handlePaypalApprove}
-        />
+        {(progress.percentage === 0) ?
+                                        (<PaypalCheckoutButton 
+                                            product = {product}
+                                            handleApprove = {handlePaypalApprove}
+                                        />):
+                                        (<ProgressBar animated variant={progress.variant} now={progress.percentage} label={progress.status}/>)}
         </Layout>
     )
 }
