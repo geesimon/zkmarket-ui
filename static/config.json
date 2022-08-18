@@ -1,7 +1,9 @@
 {
     "main":{
-        "COMMITMENT_RELAYER_URL":"http://localhost:3000/api/commitment_relay",
-        "WITHDRAWAL_RELAYER_URL":"http://localhost:3000/api/withdrawal_relay"
+        "REGISTER_COMMITMENT_URL":"http://localhost:9000/api/registerCommitment",
+        "PROVE_COMMITMENT_URL":"http://localhost:9000/api/proveCommitment",
+        "WITHDRAW_URL":"http://localhost:9000/api/withdraw",
+        "RELAYER_ADDRESS": "0xB685a03E2fDbb4F66aF57513Ea64c7821E15DA37"
     },
     "test":{
         "CHAIN_NAME": "Harmony Testnet",

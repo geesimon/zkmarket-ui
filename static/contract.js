@@ -1,12 +1,19 @@
 import AllConfig from './config.json';
-import {rbigint, bigInt2BytesLE, pedersenHasher, getCookie} from './utils.js';
+import {
+        rbigint, 
+        bigInt2BytesLE, 
+        pedersenHasher, 
+        bits2PathIndices, 
+        getCookie
+        } from './utils.js';
 
+const bigInt = require('big-integer');
 const CommitmentCircuitWASMFile = "../commitment.wasm";
 const CommitmentCircuitKey = "../circuit_commitment_final.zkey";
-const CommitmentCircuitVerificationKey = "../commitment_verification_key.json"
 const WithdrawalCircuitWASMFile = "../withdrawal.wasm";
 const WithdrawalCircuitKey = "../circuit_withdrawal_final.zkey";
-const WithdrawalCircuitVerificationKey = "../withdrawal_verification_key.json";
+// const CommitmentCircuitVerificationKey = "../commitment_verification_key.json"
+// const WithdrawalCircuitVerificationKey = "../withdrawal_verification_key.json";
 
 const TREE_LEVELS = 20;
 
@@ -14,7 +21,7 @@ const env = getCookie("env") ? getCookie("env") : 'main';
 const config = AllConfig[env];
 // console.log(config);
 
-export const generateTransaction = async (
+export const generateCommitment = async (
                                             _amount = rbigint(31),
                                             _secret = rbigint(31), 
                                             _nullifier = rbigint(31)
@@ -35,11 +42,36 @@ export const generateTransaction = async (
     };
 };
 
-export const packProofData = (proof) => {
+export const calcFee = (grossAmount) => {
+    const fee = Math.round(Number(grossAmount) * 0.01);
+    
+    if (fee < 1) {
+        return 1;
+    } else {
+        return fee;
+    }
+}
+
+export const generateWithdrawInput = async ( _commitment, _treeInfo, _recipient) => {
+    return {
+        root: _treeInfo.root.toString(),
+        nullifierHash: (await pedersenHasher(bigInt2BytesLE(_commitment.nullifier, 31))).toString(),
+        recipient: bigInt(_recipient.slice(2), 16).toString(),
+        amount: _commitment.amount,
+        relayer: bigInt(config.RELAYER_ADDRESS.slice(2), 16).toString(),
+        fee: calcFee(_commitment.amount).toString(),
+        nullifier: _commitment.nullifier,
+        secret: _commitment.secret,
+        pathElements: _treeInfo.pathElements,
+        pathIndices: bits2PathIndices(Number(_treeInfo.pathIndices), TREE_LEVELS)
+    };
+}
+
+export const packProofData = (_proof) => {
   return [
-    proof.pi_a[0], proof.pi_a[1],
-    proof.pi_b[0][1], proof.pi_b[0][0], proof.pi_b[1][1], proof.pi_b[1][0],
-    proof.pi_c[0], proof.pi_c[1],
+    _proof.pi_a[0], _proof.pi_a[1],
+    _proof.pi_b[0][1], _proof.pi_b[0][0], _proof.pi_b[1][1], _proof.pi_b[1][0],
+    _proof.pi_c[0], _proof.pi_c[1],
   ]
 };
 
@@ -57,25 +89,36 @@ const postToRelayer = async (_url, _jsonData) => {
   return response;
 }
 
-export const postPaypalTransaction = async (amount, description) => {
-  const reqJson = JSON.stringify({amount: amount, description: description});
+export const postPaypalCommitment = async (_amount, _description) => {
+  const reqJson = JSON.stringify({amount: _amount, description: _description});
   
-  console.log(reqJson);
-  // postToRelayer()
+  const resp = await postToRelayer(config.REGISTER_COMMITMENT_URL, reqJson);
+
+  return resp.code === 0;
 }
 
-export const postTransactionProof = async (transaction) => {
+export const postCommitmentProof = async (_commitment) => {
     const {proof, publicSignals} = await window.snarkjs.groth16.fullProve(
-        transaction,
-        CommitmentCircuitWASMFile,
-        CommitmentCircuitKey
-    );
+                                            _commitment,
+                                            CommitmentCircuitWASMFile,
+                                            CommitmentCircuitKey
+                                        );
+    const proofData = packProofData(proof);
+
+    const reqJson = JSON.stringify({proofData: proofData, publicSignals: publicSignals});
+    return await postToRelayer(config.PROVE_COMMITMENT_URL, reqJson);
+}
+
+export const postWithdrawalProof = async (_withdrawalInput) => {
+    const {proof, publicSignals} = await window.snarkjs.groth16.fullProve(
+                                            _withdrawalInput,
+                                            WithdrawalCircuitWASMFile,
+                                            WithdrawalCircuitKey
+                                        );
     const proofData = packProofData(proof);
 
     const reqJson = JSON.stringify({proofData: proofData, publicSignals: publicSignals});
     console.log(reqJson);
-}
-
-export const postWithdrawalProof = (transaction, recipient) => {
-
+    const resp = await postToRelayer(config.WITHDRAW_URL, reqJson);
+    return resp.code === 0;
 }

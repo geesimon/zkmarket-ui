@@ -1,7 +1,14 @@
 import * as React from 'react'
 import Layout from '../components/Layout';
 import PaypalCheckoutButton from '../components/PaypalCheckoutButton';
-import {postPaypalTransaction, postTransactionProof, postWithdrawalProof} from '/static/contract';
+import {
+    postPaypalCommitment, 
+    postCommitmentProof,
+    generateWithdrawInput,
+    postWithdrawalProof
+    } from '/static/contract';
+
+const RECIPIENT_ADDRESS='0x360e7cc953ea07d97bb21647285155a83ad35e09';
 
 const PayPage = ({location}) => {    
     React.useEffect(() => {
@@ -15,7 +22,7 @@ const PayPage = ({location}) => {
         }
     }, []);
 
-    const transaction = {
+    const commitment = {
         commitmentHash: location.state.commitmentHash,
         amount: location.state.amount,
         nullifier: location.state.nullifier,
@@ -23,22 +30,42 @@ const PayPage = ({location}) => {
     }
 
     const product = {
-        amount: transaction.amount,
-        description: 'zkMarket Coin {' + transaction.commitmentHash + '}'
+        amount: commitment.amount,
+        description: 'zkMarket Coin {' + commitment.commitmentHash + '}'
     }
     
     const handlePaypalApprove = async (_orderDetails) => {
         const paypalAmount = _orderDetails.purchase_units[0].amount.value;
-        const paypalDescription = _orderDetails.purchase_units[0].description;
         
-        if (Number(paypalAmount) !== Number(transaction.amount)) {
-            console.log(paypalAmount, transaction.amount);
+        if (Number(paypalAmount) !== Number(commitment.amount)) {
+            console.log(paypalAmount, commitment.amount);
             alert('Amount Mismatch!');
             return;
         }
 
-        postPaypalTransaction(paypalAmount, paypalDescription);
-        postTransactionProof(transaction);
+        let ret = await postPaypalCommitment(
+            commitment.amount, 
+            'zkMarket Coin {' + commitment.commitmentHash + '}'
+        );
+        if (!ret) {
+            console.log('Failed to post paypal commitment!');
+            return;
+        }
+
+        const treeInfo = await postCommitmentProof(commitment);
+        if (treeInfo.root === undefined) {
+            console.log('Failed to post commitment proof!');
+            return;
+        }
+
+        const withdrawalInput = await generateWithdrawInput(commitment, treeInfo, RECIPIENT_ADDRESS);
+        console.log(withdrawalInput);
+        ret = await postWithdrawalProof(withdrawalInput);
+            if (!ret) {
+            console.log('Failed to post withdrawal proof!');
+            return;
+        } 
+        console.log('Done!');
     }
 
     return (

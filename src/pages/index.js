@@ -1,11 +1,11 @@
 import * as React from 'react'
 import Layout from '../components/Layout';
 import { navigate } from "gatsby"
-import {generateTransaction} from '/static/contract'
 import {Card, Button, Form, Row, Col} from 'react-bootstrap';
+import {generateCommitment} from '/static/contract';
 
 const IndexPage = () => {
-    let amount;
+    const [amount, setMount] = React.useState(1); 
 
     React.useEffect(() => {
         // Add snarkjs script
@@ -15,23 +15,23 @@ const IndexPage = () => {
 
         return () => {
             document.body.removeChild(script);
-        }
+        }        
     }, []);
 
     const handleChangeAmount = (event) =>{
-        amount = Number(event.target.value)
+        setMount(Number(event.target.value));
     }
-
+    
     const handlePayClick = async () => {
-        const transaction = await generateTransaction(amount);
+        const commitment = await generateCommitment(amount);
 
-        navigate("/pay/", { state: transaction })
+        navigate("/pay/", { state: commitment });
     }
  
     return (
         <Layout pageTitle="Purchase Coin">
             <h1>Welcome to zkMarket Finance!</h1>
-            <Card >
+            <Card>
                 <Card.Body>
                 <Card.Title>Please choose the amount you want to buy</Card.Title>        
                 <Form >
