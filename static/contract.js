@@ -1,3 +1,7 @@
+import { ethers } from 'ethers';
+import PaypalUSDCAssetPoolContract from '../src/contracts/PaypalUSDCAssetPool.json';
+import USDCTokenContract from '../src/contracts/IERC20.json';
+
 import AllConfig from './config.json';
 import {
         rbigint, 
@@ -17,9 +21,12 @@ const WithdrawalCircuitKey = "../circuit_withdrawal_final.zkey";
 
 const TREE_LEVELS = 20;
 
-const env = getCookie("env") ? getCookie("env") : 'main';
+const env = getCookie("env") ? getCookie("env") : 'dev';
 const config = AllConfig[env];
 // console.log(config);
+
+const PaypalUSDCAssetPoolAbi = PaypalUSDCAssetPoolContract.abi;
+const USDCTokenAbi = USDCTokenContract.abi;
 
 export const generateCommitment = async (
                                             _amount = rbigint(31),
@@ -68,33 +75,32 @@ export const generateWithdrawInput = async ( _commitment, _treeInfo, _recipient)
 }
 
 export const packProofData = (_proof) => {
-  return [
-    _proof.pi_a[0], _proof.pi_a[1],
-    _proof.pi_b[0][1], _proof.pi_b[0][0], _proof.pi_b[1][1], _proof.pi_b[1][0],
-    _proof.pi_c[0], _proof.pi_c[1],
-  ]
+    return [
+        _proof.pi_a[0], _proof.pi_a[1],
+        _proof.pi_b[0][1], _proof.pi_b[0][0], _proof.pi_b[1][1], _proof.pi_b[1][0],
+        _proof.pi_c[0], _proof.pi_c[1],
+    ]
 };
 
 const postToRelayer = async (_url, _jsonData) => {
-  const rawResponse = await window.fetch(_url, {
-                                      method: 'POST',
-                                      headers: {
-                                        'Accept': 'application/json',
-                                        'Content-Type': 'application/json'
-                                      },
-                                      body: _jsonData});
+    const rawResponse = await window.fetch(_url, {
+                                        method: 'POST',
+                                        headers: {
+                                            'Accept': 'application/json',
+                                            'Content-Type': 'application/json'
+                                        },
+                                        body: _jsonData});
 
-  const response = await rawResponse.json();
+    const response = await rawResponse.json();
 
-  return response;
-}
+    return response;
+    }
 
 export const postPaypalCommitment = async (_amount, _description) => {
-  const reqJson = JSON.stringify({amount: _amount, description: _description});
-  
-  const resp = await postToRelayer(config.REGISTER_COMMITMENT_URL, reqJson);
+    const reqJson = JSON.stringify({amount: _amount, description: _description});    
+    const resp = await postToRelayer(config.REGISTER_COMMITMENT_URL, reqJson);
 
-  return resp.code === 0;
+    return resp.code === 0;
 }
 
 export const postCommitmentProof = async (_commitment) => {
@@ -121,4 +127,99 @@ export const postWithdrawalProof = async (_withdrawalInput) => {
     console.log(reqJson);
     const resp = await postToRelayer(config.WITHDRAW_URL, reqJson);
     return resp.code === 0;
+}
+
+const getWeb3Provider = async () => {
+    const {ethereum} = window;
+    
+    if(!ethereum) {
+        throw new Error('Please make sure you have Metamask compatible wallet installed!');
+    }
+    
+    // Swith to appropriate chain
+    if (!ethereum.chainId || !config.CHAIN_IDS.includes(parseInt(ethereum.chainId).toString())){    
+        console.log("Swith network to:", config.CHAIN_IDS[0]);
+        const chainID = '0x'+ parseInt(config.CHAIN_IDS[0]).toString(16);
+        try{
+            await ethereum.request({
+                method: 'wallet_switchEthereumChain',
+                params: [{ chainId: chainID }]
+            });
+            console.log("Switch done!");
+        } catch(switchError){
+            // This error code indicates that the chain has not been added to MetaMask.
+            if (switchError.code === 4902) {
+                // Add network to MetaMask
+                await ethereum.request({
+                                        method: 'wallet_addEthereumChain',
+                                        params: [
+                                        {
+                                            chainId: chainID,
+                                            chainName: config.CHAIN_NAME,
+                                            rpcUrls: [config.CHAIN_URL],
+                                            nativeCurrency: {
+                                                            symbol: config.CHAIN_CURRENCY_SYMBOL
+                                                            },
+                                            blockExplorerUrls:[config.CHAIN_EXPLORER_URL]
+                                        },
+                                        ],
+                                    });
+            } else{
+                throw switchError;
+            }
+        }
+    }
+
+  return new ethers.providers.Web3Provider(ethereum);
+}
+
+const connectWallet = async () => {
+    const web3Provider = await getWeb3Provider();
+    
+    await web3Provider.send("eth_requestAccounts", []);
+    return web3Provider.getSigner();
+}
+
+
+export const getSellerBalance = async() => {
+    const provider = await connectWallet();
+    const paypalUSDCAssetPool = new ethers.Contract(
+                                                    config.PAYPAL_USDC_ASSET_POOL_CONTRACT_ADDRESS, 
+                                                    PaypalUSDCAssetPoolAbi, 
+                                                    provider
+                                                );
+    const balance = await paypalUSDCAssetPool.getSellerBalance();
+    return Number(balance.div(ethers.BigNumber.from(10**6)));
+
+    // const currentUserAddress = await provider.getAddress()
+    // console.log(currentUserAddress);
+    // const usdcTokenAddress = await paypalUSDCAssetPool.getUSDCTokenAddress();
+    // const usdcToken = new ethers.Contract(
+    //                                         usdcTokenAddress, 
+    //                                         USDCTokenAbi, 
+    //                                         provider
+    //                                     );
+
+    // const balance = await usdcToken.balanceOf(currentUserAddress)
+
+    // return Number(balance.div(ethers.BigNumber.from(10**6)));    
+}
+
+export const sellerDeposit = async(_amount) => {
+    const usdcAmount = _amount * 10 ** 6;
+
+    const provider = await connectWallet();
+    const paypalUSDCAssetPool = new ethers.Contract(
+                                                    config.PAYPAL_USDC_ASSET_POOL_CONTRACT_ADDRESS, 
+                                                    PaypalUSDCAssetPoolAbi, 
+                                                    provider
+                                                );
+    const usdcTokenAddress = await paypalUSDCAssetPool.getUSDCTokenAddress();
+    const usdcToken = new ethers.Contract(
+                                            usdcTokenAddress, 
+                                            USDCTokenAbi, 
+                                            provider
+                                        );
+    await usdcToken.approve(config.PAYPAL_USDC_ASSET_POOL_CONTRACT_ADDRESS, usdcAmount);
+    await paypalUSDCAssetPool.sellerDeposit(usdcAmount);
 }
