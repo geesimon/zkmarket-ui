@@ -49,14 +49,9 @@ export const generateCommitment = async (
     };
 };
 
-export const calcFee = (grossAmount) => {
-    const fee = Math.round(Number(grossAmount) * 0.01);
-    
-    if (fee < 1) {
-        return 1;
-    } else {
-        return fee;
-    }
+
+export const getFee = (_amount) => {
+    return ethers.BigNumber.from(_amount).mul(4).div(100);
 }
 
 export const generateWithdrawInput = async ( _commitment, _treeInfo, _recipient) => {
@@ -66,7 +61,7 @@ export const generateWithdrawInput = async ( _commitment, _treeInfo, _recipient)
         recipient: bigInt(_recipient.slice(2), 16).toString(),
         amount: _commitment.amount,
         relayer: bigInt(config.RELAYER_ADDRESS.slice(2), 16).toString(),
-        fee: calcFee(_commitment.amount).toString(),
+        fee: getFee(_commitment.amount).toString(),
         nullifier: _commitment.nullifier,
         secret: _commitment.secret,
         pathElements: _treeInfo.pathElements,
@@ -181,15 +176,19 @@ const connectWallet = async () => {
 }
 
 
-export const getSellerBalance = async() => {
+export const getSellerInfo = async() => {
     const provider = await connectWallet();
     const paypalUSDCAssetPool = new ethers.Contract(
                                                     config.PAYPAL_USDC_ASSET_POOL_CONTRACT_ADDRESS, 
                                                     PaypalUSDCAssetPoolAbi, 
                                                     provider
                                                 );
-    const balance = await paypalUSDCAssetPool.getSellerBalance();
-    return Number(balance.div(ethers.BigNumber.from(10**6)));
+    const sellerInfo = await paypalUSDCAssetPool.getSellerInfo();
+    
+    return {
+        paypalAccount: sellerInfo.paypalAccount,
+        balance: Number(ethers.BigNumber.from(sellerInfo.balance).div(10**6).toString())
+    }
 
     // const currentUserAddress = await provider.getAddress()
     // console.log(currentUserAddress);
@@ -205,7 +204,7 @@ export const getSellerBalance = async() => {
     // return Number(balance.div(ethers.BigNumber.from(10**6)));    
 }
 
-export const sellerDeposit = async(_amount) => {
+export const sellerDeposit = async(_paypalAccount, _amount) => {
     const usdcAmount = _amount * 10 ** 6;
 
     const provider = await connectWallet();
@@ -216,10 +215,23 @@ export const sellerDeposit = async(_amount) => {
                                                 );
     const usdcTokenAddress = await paypalUSDCAssetPool.getUSDCTokenAddress();
     const usdcToken = new ethers.Contract(
-                                            usdcTokenAddress, 
+                                            usdcTokenAddress,
                                             USDCTokenAbi, 
                                             provider
                                         );
     await usdcToken.approve(config.PAYPAL_USDC_ASSET_POOL_CONTRACT_ADDRESS, usdcAmount);
-    await paypalUSDCAssetPool.sellerDeposit(usdcAmount);
+    await paypalUSDCAssetPool.sellerDeposit(_paypalAccount, usdcAmount);
+}
+
+export const getPoolSize = async() => {
+    const provider = await getWeb3Provider();
+
+    const paypalUSDCAssetPool = new ethers.Contract(
+                                                    config.PAYPAL_USDC_ASSET_POOL_CONTRACT_ADDRESS,
+                                                    PaypalUSDCAssetPoolAbi, 
+                                                    provider
+                                                    );
+    const balance = await paypalUSDCAssetPool.getBalance(config.PAYPAL_USDC_ASSET_POOL_CONTRACT_ADDRESS);
+
+    return Number(ethers.BigNumber.from(balance).div(10**6));
 }

@@ -9,8 +9,6 @@ import {
     postWithdrawalProof
     } from '/static/contract';
 
-const RECIPIENT_ADDRESS='0x360e7cc953ea07d97bb21647285155a83ad35e09';
-
 const PayPage = ({location}) => {
     const [progress, setProgress] = React.useState({
         variant: 'info',
@@ -36,15 +34,17 @@ const PayPage = ({location}) => {
         secret: location.state.secret
     }
 
+    const recipent = location.state.recipient;
+
     const product = {
-        amount: commitment.amount,
+        amount: commitment.amount / (10 ** 6),
         description: 'zkMarket Coin {' + commitment.commitmentHash + '}'
     }
     
     const handlePaypalApprove = async (_orderDetails) => {
         const paypalAmount = _orderDetails.purchase_units[0].amount.value;
         
-        if (Number(paypalAmount) !== Number(commitment.amount)) {
+        if (Number(paypalAmount) * (10 ** 6) !== Number(commitment.amount)) {
             console.log(paypalAmount, commitment.amount);
             alert('Amount Mismatch!');
             return;
@@ -52,7 +52,7 @@ const PayPage = ({location}) => {
 
         setProgress({status: 'Wait Paypal Transaction Got Posted to Chain', variant: 'info', percentage: 1});
         let ret = await postPaypalCommitment(
-            commitment.amount, 
+            commitment.amount,
             'zkMarket Coin {' + commitment.commitmentHash + '}'
         );
         if (!ret) {
@@ -68,7 +68,7 @@ const PayPage = ({location}) => {
         }
 
         setProgress({status: 'Post Withdrawal Proof', variant: 'info', percentage: 50});
-        const withdrawalInput = await generateWithdrawInput(commitment, treeInfo, RECIPIENT_ADDRESS);
+        const withdrawalInput = await generateWithdrawInput(commitment, treeInfo, recipent);
         console.log(withdrawalInput);
         ret = await postWithdrawalProof(withdrawalInput);
             if (!ret) {
