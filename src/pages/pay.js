@@ -1,5 +1,5 @@
 import React from 'react'
-import {ProgressBar, ButtonToolbar} from 'react-bootstrap';
+import {ProgressBar} from 'react-bootstrap';
 import Layout from '../components/Layout';
 import PaypalCheckoutButton from '../components/PaypalCheckoutButton';
 import {
@@ -27,14 +27,18 @@ const PayPage = ({location}) => {
         }
     }, []);
 
-    const commitment = {
-        commitmentHash: location.state.commitmentHash,
-        amount: location.state.amount,
-        nullifier: location.state.nullifier,
-        secret: location.state.secret
+    if (location.state === undefined) {        
+        console.log('Failed to pass state!');
+        return (<></>);
     }
 
-    const recipent = location.state.recipient;
+    const commitment = {
+            commitmentHash: location.state.commitmentHash,
+            amount: location.state.amount,
+            nullifier: location.state.nullifier,
+            secret: location.state.secret
+    }
+    const recipent = location.state.recipient;    
 
     const product = {
         amount: commitment.amount / (10 ** 6),
@@ -47,7 +51,7 @@ const PayPage = ({location}) => {
         if (Number(paypalAmount) * (10 ** 6) !== Number(commitment.amount)) {
             console.log(paypalAmount, commitment.amount);
             alert('Amount Mismatch!');
-            return;
+            return (<></>);
         }
 
         setProgress({status: 'Wait Paypal Transaction Got Posted to Chain', variant: 'info', percentage: 1});

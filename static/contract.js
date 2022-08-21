@@ -130,7 +130,8 @@ const getWeb3Provider = async () => {
     if(!ethereum) {
         throw new Error('Please make sure you have Metamask compatible wallet installed!');
     }
-    
+    console.log('Current network Id:', parseInt(ethereum.chainId).toString());
+
     // Swith to appropriate chain
     if (!ethereum.chainId || !config.CHAIN_IDS.includes(parseInt(ethereum.chainId).toString())){    
         console.log("Swith network to:", config.CHAIN_IDS[0]);
@@ -205,7 +206,7 @@ export const getSellerInfo = async() => {
 }
 
 export const sellerDeposit = async(_paypalAccount, _amount) => {
-    const usdcAmount = _amount * 10 ** 6;
+    const usdcAmount = ethers.BigNumber.from(_amount).mul(10 ** 6);
 
     const provider = await connectWallet();
     const paypalUSDCAssetPool = new ethers.Contract(
@@ -219,8 +220,11 @@ export const sellerDeposit = async(_paypalAccount, _amount) => {
                                             USDCTokenAbi, 
                                             provider
                                         );
-    await usdcToken.approve(config.PAYPAL_USDC_ASSET_POOL_CONTRACT_ADDRESS, usdcAmount);
-    await paypalUSDCAssetPool.sellerDeposit(_paypalAccount, usdcAmount);
+    let tx = await usdcToken.approve(config.PAYPAL_USDC_ASSET_POOL_CONTRACT_ADDRESS, usdcAmount.toString());
+    await tx.wait();
+    
+    tx = await paypalUSDCAssetPool.sellerDeposit(_paypalAccount, usdcAmount.toString());
+    await tx.wait();
 }
 
 export const getPoolSize = async() => {
@@ -232,6 +236,19 @@ export const getPoolSize = async() => {
                                                     provider
                                                     );
     const balance = await paypalUSDCAssetPool.getBalance(config.PAYPAL_USDC_ASSET_POOL_CONTRACT_ADDRESS);
+
+    return Number(ethers.BigNumber.from(balance).div(10**6));
+}
+
+export const getWalletBalance = async() => { 
+    const provider = await connectWallet();
+
+    const paypalUSDCAssetPool = new ethers.Contract(
+                                                    config.PAYPAL_USDC_ASSET_POOL_CONTRACT_ADDRESS,
+                                                    PaypalUSDCAssetPoolAbi, 
+                                                    provider
+                                                    );
+    const balance = await paypalUSDCAssetPool.getBalance(provider.getAddress());
 
     return Number(ethers.BigNumber.from(balance).div(10**6));
 }

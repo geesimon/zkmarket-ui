@@ -1,8 +1,9 @@
 import React from 'react'
 import Layout from '../components/Layout';
-import {Card, Button, Form, Row, Col} from 'react-bootstrap';
+import {Card, Button, Form, Spinner} from 'react-bootstrap';
 import {getPoolSize,
-        getSellerInfo, 
+        getSellerInfo,
+        getWalletBalance,
         sellerDeposit} from '/static/contract';
 
 const IndexPage = () => {
@@ -14,9 +15,11 @@ const IndexPage = () => {
                                                     paypalAccount: '',
                                                     amount: 0
                                                 });
-    const [poolSize, setPoolSize] = React.useState(0);                                                
+    const [walletBalance, setWalletBalance] = React.useState(0);
+    const [poolSize, setPoolSize] = React.useState(0);
+    const [working, setWorking] = React.useState(false);    
 
-    React.useEffect(() => {
+    const updateBalances = () => {
         getPoolSize().then(balance => setPoolSize(balance));
         getSellerInfo().then(info => {
             setSellerInfo(info);
@@ -27,6 +30,11 @@ const IndexPage = () => {
                 }
             });
         });
+        getWalletBalance().then(balance => setWalletBalance(balance));
+    }
+
+    React.useEffect(() => {
+        updateBalances();
     }, []);
 
     const handleChangeAmount = (event) =>{
@@ -48,7 +56,14 @@ const IndexPage = () => {
     }
     
     const handleDepositClick = async () => {
-        await sellerDeposit(deposit.paypalAccount, deposit.amount);
+        setWorking(true);
+        try {
+            await sellerDeposit(deposit.paypalAccount, deposit.amount);
+            updateBalances();
+        } catch(e) {
+            console.log(e);
+        }        
+        setWorking(false);
     }
  
     return (
@@ -58,18 +73,28 @@ const IndexPage = () => {
                 <Card.Body>
                 <Card.Subtitle className="mb-3 text-muted">Total Pool Size: {poolSize} (USDC) </Card.Subtitle>
                 <Card.Subtitle className="mb-2 text-muted">Current Balance in Pool: {sellerInfo.balance} (USDC) </Card.Subtitle>
+                <Card.Subtitle className="mb-2 text-muted">Current Balance in Wallet: {walletBalance} (USDC) </Card.Subtitle>
                 </Card.Body>
                 <Card.Body>
                 <Form>
                     <Form.Group className="mb-3">
-                        <Form.Label>Paypal Account</Form.Label>
+                        <Form.Label>Paypal Account to Receive Fund</Form.Label>
                         <Form.Control type="email" value={deposit.paypalAccount} onChange={handleChangePaypalAccount}/>
                     </Form.Group>
                     <Form.Group className="mb-3">
                         <Form.Label>Amount to Deposit</Form.Label>
                         <Form.Control type="input" value={deposit.amount} onChange={handleChangeAmount}/>
                     </Form.Group>
-                    <Button variant="primary" size="lg" onClick={handleDepositClick} disabled={(deposit.amount === 0 || deposit.paypalAccount.length < 8)}>
+                    <Button variant="primary" size="lg" onClick={handleDepositClick} disabled={(deposit.amount === 0 || deposit.paypalAccount.length < 8 || working)}>
+                        {working &&
+                            <Spinner
+                                as="span"
+                                animation="border"
+                                size="sm"
+                                role="status"
+                                aria-hidden="true"
+                            />
+                        }
                         Deposit
                     </Button>
                 </Form>

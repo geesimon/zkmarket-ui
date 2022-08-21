@@ -1,7 +1,7 @@
 import * as React from 'react'
 import Layout from '../components/Layout';
 import { navigate } from "gatsby"
-import {Card, Button, Form, Row, Col, Spinner} from 'react-bootstrap';
+import {Card, Button, Form, Spinner} from 'react-bootstrap';
 import {generateCommitment, getPoolSize} from '/static/contract';
 
 const IndexPage = () => {
@@ -44,7 +44,7 @@ const IndexPage = () => {
             recipient: recipient
         }
 
-        navigate("/pay/", { state: param});
+        navigate("/pay/", { state: param });
     }
  
     return (
@@ -62,7 +62,7 @@ const IndexPage = () => {
                         <Form.Label>Amount to Deposit</Form.Label>
                         <Form.Control type="input" value={amount} onChange={handleChangeAmount}/>
                     </Form.Group>
-                    <Button variant="primary" size="lg" onClick={handlePayClick} disabled={(amount === 0 || recipient.length != 42)}>
+                    <Button variant="primary" size="lg" onClick={handlePayClick} disabled={(amount === 0 || recipient.length !== 42)}>
                         {loading &&
                             <Spinner
                                 as="span"
