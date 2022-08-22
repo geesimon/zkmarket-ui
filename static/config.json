@@ -9,7 +9,7 @@
         "PROVE_COMMITMENT_URL":"http://localhost:9000/api/proveCommitment",
         "WITHDRAW_URL":"http://localhost:9000/api/withdraw",
         "RELAYER_ADDRESS": "0xB685a03E2fDbb4F66aF57513Ea64c7821E15DA37",
-        "PAYPAL_USDC_ASSET_POOL_CONTRACT_ADDRESS": "0x7Eb29DA9Ca5919CB136c84389afBb5A9Fb51a592"
+        "PAYPAL_USDC_ASSET_POOL_CONTRACT_ADDRESS": "0x8F6C34e69F7CbCc2f8DaAEc76fDe4E18A505E141"
     },
     "test":{
         "CHAIN_NAME": "Matic Mumbai",

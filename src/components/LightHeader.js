@@ -1,6 +1,6 @@
 import React from 'react';
 import { Navbar, Container} from 'react-bootstrap';
-import logo from '../images/zkmarket.jpeg'
+import logo from '../images/zkmarket.png'
 
 export default function LightHeader() {
     return (
