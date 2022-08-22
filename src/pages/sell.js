@@ -78,7 +78,7 @@ const IndexPage = () => {
                 <Card.Body>
                 <Form>
                     <Form.Group className="mb-3">
-                        <Form.Label>Paypal Account to Receive Fund</Form.Label>
+                        <Form.Label>Paypal Account Email to Receive Fund</Form.Label>
                         <Form.Control type="email" value={deposit.paypalAccount} onChange={handleChangePaypalAccount}/>
                     </Form.Group>
                     <Form.Group className="mb-3">

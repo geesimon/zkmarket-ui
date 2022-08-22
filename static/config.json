@@ -21,7 +21,7 @@
         "PROVE_COMMITMENT_URL":"http://localhost:9000/api/proveCommitment",
         "WITHDRAW_URL":"http://localhost:9000/api/withdraw",
         "RELAYER_ADDRESS": "0xB685a03E2fDbb4F66aF57513Ea64c7821E15DA37",
-        "PAYPAL_USDC_ASSET_POOL_CONTRACT_ADDRESS": "0x9BB1A178Ab60798166cc8c96bE17f35694AF2F07"
+        "PAYPAL_USDC_ASSET_POOL_CONTRACT_ADDRESS": "0x1Bd15aA5Fe95Fd5ff5B300e2545407e14BECB76c"
     },
     "main":{
         "CHAIN_NAME": "Polygon Mainnet",
