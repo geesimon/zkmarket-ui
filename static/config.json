@@ -9,7 +9,7 @@
         "PROVE_COMMITMENT_URL":"http://localhost:9000/api/proveCommitment",
         "WITHDRAW_URL":"http://localhost:9000/api/withdraw",
         "RELAYER_ADDRESS": "0xB685a03E2fDbb4F66aF57513Ea64c7821E15DA37",
-        "PAYPAL_USDC_ASSET_POOL_CONTRACT_ADDRESS": "0x46dD8bfdB6e27a4296E0De82f851A4C50059464d"
+        "PAYPAL_USDC_ASSET_POOL_CONTRACT_ADDRESS": "0xEE80F825528568F083D7431B1Ac2668B2DE7Aad2"
     },
     "test":{
         "CHAIN_NAME": "Matic Mumbai",
@@ -17,11 +17,11 @@
         "CHAIN_CURRENCY_SYMBOL": "MATIC",
         "CHAIN_EXPLORER_URL": "https://mumbai.polygonscan.com/",
         "CHAIN_IDS": ["80001"],
-        "REGISTER_COMMITMENT_URL":"http://localhost:9000/api/registerCommitment",
-        "PROVE_COMMITMENT_URL":"http://localhost:9000/api/proveCommitment",
-        "WITHDRAW_URL":"http://localhost:9000/api/withdraw",
+        "REGISTER_COMMITMENT_URL":"https://paypal.zkmarket.finance/register",
+        "PROVE_COMMITMENT_URL":"https://relayer.zkmarket.finance/commitment",
+        "WITHDRAW_URL":"https://relayer.zkmarket.finance/withdrawal",
         "RELAYER_ADDRESS": "0xB685a03E2fDbb4F66aF57513Ea64c7821E15DA37",
-        "PAYPAL_USDC_ASSET_POOL_CONTRACT_ADDRESS": "0x1Bd15aA5Fe95Fd5ff5B300e2545407e14BECB76c"
+        "PAYPAL_USDC_ASSET_POOL_CONTRACT_ADDRESS": "0xC6Ac772ebe6751877cC3B9B997F11e401917E87f"
     },
     "main":{
         "CHAIN_NAME": "Polygon Mainnet",
@@ -33,6 +33,6 @@
         "PROVE_COMMITMENT_URL":"http://localhost:9000/api/proveCommitment",
         "WITHDRAW_URL":"http://localhost:9000/api/withdraw",
         "RELAYER_ADDRESS": "0xB685a03E2fDbb4F66aF57513Ea64c7821E15DA37",
-        "PAYPAL_USDC_ASSET_POOL_CONTRACT_ADDRESS": "0x695B4367D9096D287960718Bf509bB53be6e3B56"
+        "PAYPAL_USDC_ASSET_POOL_CONTRACT_ADDRESS": "0x87c4a39A42F37e5Ff389BE1D66B751bDF96E30de"
     }
 }

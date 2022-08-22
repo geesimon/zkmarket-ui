@@ -21,7 +21,7 @@ const WithdrawalCircuitKey = "../circuit_withdrawal_final.zkey";
 
 const TREE_LEVELS = 20;
 
-const env = getCookie("env") ? getCookie("env") : 'dev';
+const env = getCookie("env") ? getCookie("env") : 'test';
 const config = AllConfig[env];
 // console.log(config);
 
@@ -107,6 +107,7 @@ export const postCommitmentProof = async (_commitment) => {
     const proofData = packProofData(proof);
 
     const reqJson = JSON.stringify({proofData: proofData, publicSignals: publicSignals});
+    console.log(reqJson);
     return await postToRelayer(config.PROVE_COMMITMENT_URL, reqJson);
 }
 
